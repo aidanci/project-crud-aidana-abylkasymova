@@ -41,8 +41,8 @@ planets-python/
 ---
 
 ## Uruchomienie projektu lokalnie
-1️⃣ Zainstaluj Python 3.10+  
-2️⃣ W folderze projektu utwórz i aktywuj wirtualne środowisko:
+1. Zainstaluj Python 3.10+  
+2️. W folderze projektu utwórz i aktywuj wirtualne środowisko:
 
 ```bash
 python -m venv .venv
@@ -53,18 +53,18 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-3️⃣ Zainstaluj wymagane biblioteki:
+3️. Zainstaluj wymagane biblioteki:
 ```bash
 pip install -r requirements.txt
 ```
 
-4️⃣ Uruchom aplikację:
+4️. Uruchom aplikację:
 ```bash
 python -m backend.app
 ```
 
-5️⃣ Otwórz w przeglądarce:  
-👉 [http://127.0.0.1:3000](http://127.0.0.1:3000)
+5️. Otwórz w przeglądarce:  
+👉 [https://planety-aidana.onrender.com/](https://planety-aidana.onrender.com/)
 
 > Przy pierwszym uruchomieniu zostanie automatycznie utworzona baza danych `planets.db`.
 
