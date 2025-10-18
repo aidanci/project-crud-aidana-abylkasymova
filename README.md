@@ -120,9 +120,7 @@ Projekt działa publicznie pod adresem:
 ---
 
 ## 🖼️ Zrzut ekranu
-<p align="center">
-  <img src="screenshot.png" alt="Zrzut ekranu aplikacji" width="700"/>
-</p>
+![Zrzut ekranu aplikacji](screenshot.png)
 
 ---
 
