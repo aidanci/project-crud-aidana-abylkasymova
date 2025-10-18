@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Planets CRUD (Flask)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    input { margin: .25rem; padding: .25rem; }
+    button { margin: .25rem; padding: .4rem .8rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: .4rem;
+      text-align: left;
+    }
+    h1, h2 { color: #333; }
+  </style>
+</head>
+<body>
+<h1>🌍 Planets CRUD</h1>
+
+<h2>Add / Edit Planet</h2>
+<div class="controls">
+  <input id="id" type="hidden">
+  <input id="name" placeholder="Name" required>
+  <input id="system" placeholder="System" required>
+  <input id="climate" placeholder="Climate" required>
+  <input id="population" type="number" placeholder="Population (>=0)" required>
+  <input id="surfaceType" placeholder="Surface type" required>
+  <button id="save">Save</button>
+  <button id="reset" type="button">Reset</button>
+</div>
+
+<h2>All Planets</h2>
+<table id="tbl">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>System</th>
+      <th>Climate</th>
+      <th>Population</th>
+      <th>Surface</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="rows"></tbody>
+</table>
+
+<script>
+const API = "/planets";
+const qs = s => document.querySelector(s);
+const F = {
+  id: qs('#id'),
+  name: qs('#name'),
+  system: qs('#system'),
+  climate: qs('#climate'),
+  population: qs('#population'),
+  surfaceType: qs('#surfaceType')
+};
+const rows = qs('#rows');
+
+//load
+async function list() {
+  const r = await fetch(API);
+  const data = await r.json();
+  rows.innerHTML = data.map(p => `
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.name}</td>
+      <td>${p.system}</td>
+      <td>${p.climate}</td>
+      <td>${p.population}</td>
+      <td>${p.surfaceType}</td>
+      <td>
+        <button onclick="editP(${p.id})">Edit</button>
+        <button onclick="delP(${p.id})">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+//edit
+window.editP = async (id) => {
+  const r = await fetch(`${API}/${id}`);
+  if (!r.ok) { alert('Planet not found'); return; }
+  const p = await r.json();
+  F.id.value = p.id;
+  F.name.value = p.name;
+  F.system.value = p.system;
+  F.climate.value = p.climate;
+  F.population.value = p.population;
+  F.surfaceType.value = p.surfaceType;
+};
+
+//delete
+window.delP = async (id) => {
+  if (!confirm('Delete this planet?')) return;
+  const r = await fetch(`${API}/${id}`, { method: 'DELETE' });
+  if (r.ok) list(); else alert('Delete failed');
+};
+
+//save
+qs('#save').onclick = async () => {
+  const body = JSON.stringify({
+    name: F.name.value.trim(),
+    system: F.system.value.trim(),
+    climate: F.climate.value.trim(),
+    population: Number(F.population.value),
+    surfaceType: F.surfaceType.value.trim()
+  });
+  const id = F.id.value;
+  const r = await fetch(id ? `${API}/${id}` : API, {
+    method: id ? 'PUT' : 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body
+  });
+  if (r.ok) { reset(); list(); }
+  else {
+    const e = await r.json();
+    alert(e.error || 'Error occurred');
+  }
+};
+
+//reset
+function reset() { Object.values(F).forEach(i => i.value = ''); }
+qs('#reset').onclick = reset;
+
+list();
+</script>
+</body>
+</html>
