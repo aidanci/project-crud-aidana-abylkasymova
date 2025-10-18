@@ -64,7 +64,7 @@ python -m backend.app
 ```
 
 5️. Otwórz w przeglądarce:  
-👉 [https://planety-aidana.onrender.com/](https://planety-aidana.onrender.com/)
+[https://planety-aidana.onrender.com/](https://planety-aidana.onrender.com/)
 
 > Przy pierwszym uruchomieniu zostanie automatycznie utworzona baza danych `planets.db`.
 
@@ -115,7 +115,7 @@ Komunikacja odbywa się przez REST API (`fetch()`).
 
 ## Aplikacja online
 Projekt działa publicznie pod adresem:  
-👉 [https://planety-tanaiym.onrender.com](https://planety-tanaiym.onrender.com)
+[https://planety-tanaiym.onrender.com](https://planety-tanaiym.onrender.com)
 
 ---
 
