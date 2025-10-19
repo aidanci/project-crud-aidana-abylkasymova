@@ -1,21 +1,29 @@
 from flask import Blueprint, jsonify, request
 from sqlite3 import IntegrityError
-from .database import get_conn
-from .validators import validate_planet
+from database import get_conn
+from validators import validate_planet
 
 bp = Blueprint("planets", __name__, url_prefix="/planets")
 
 @bp.get("/")
 def list_planets():
     conn = get_conn()
-    rows = conn.execute("SELECT id,name,system,climate,population,surface_type AS surfaceType FROM planets ORDER BY id").fetchall()
+    rows = conn.execute("""
+        SELECT id,name,system,climate,population,surface_type AS surfaceType,
+               temperature, terrainType
+        FROM planets ORDER BY id
+    """).fetchall()
     conn.close()
     return jsonify([dict(r) for r in rows])
 
 @bp.get("/<int:pid>")
 def get_planet(pid: int):
     conn = get_conn()
-    row = conn.execute("SELECT id,name,system,climate,population,surface_type AS surfaceType FROM planets WHERE id=?", (pid,)).fetchone()
+    row = conn.execute("""
+        SELECT id,name,system,climate,population,surface_type AS surfaceType,
+               temperature, terrainType
+        FROM planets WHERE id=?
+    """, (pid,)).fetchone()
     conn.close()
     if not row:
         return jsonify({"error": "Planet not found"}), 404
@@ -31,10 +39,12 @@ def create_planet():
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO planets (name, system, climate, population, surface_type) VALUES (?, ?, ?, ?, ?)",
-            (data["name"], data["system"], data["climate"], int(data["population"]), data["surfaceType"])
-        )
+        cur.execute("""
+            INSERT INTO planets
+            (name, system, climate, population, surface_type, temperature, terrainType)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (data["name"], data["system"], data["climate"], data["population"],
+              data["surfaceType"], data["temperature"], data["terrainType"]))
         conn.commit()
         new_id = cur.lastrowid
         conn.close()
@@ -49,22 +59,26 @@ def update_planet(pid: int):
     if error:
         return jsonify({"error": error}), 400
 
-    try:
-        conn = get_conn()
-        cur = conn.cursor()
-        exists = conn.execute("SELECT 1 FROM planets WHERE id=?", (pid,)).fetchone()
-        if not exists:
-            conn.close()
-            return jsonify({"error": "Planet not found"}), 404
+    conn = get_conn()
+    exists = conn.execute("SELECT 1 FROM planets WHERE id=?", (pid,)).fetchone()
+    if not exists:
+        conn.close()
+        return jsonify({"error": "Planet not found"}), 404
 
-        cur.execute(
-            "UPDATE planets SET name=?, system=?, climate=?, population=?, surface_type=? WHERE id=?",
-            (data["name"], data["system"], data["climate"], int(data["population"]), data["surfaceType"], pid)
-        )
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE planets
+            SET name=?, system=?, climate=?, population=?, surface_type=?,
+                temperature=?, terrainType=?
+            WHERE id=?
+        """, (data["name"], data["system"], data["climate"], data["population"],
+              data["surfaceType"], data["temperature"], data["terrainType"], pid))
         conn.commit()
         conn.close()
         return jsonify({"message": "Planet updated"})
     except IntegrityError:
+        conn.close()
         return jsonify({"error": "Planet with this name already exists in this system"}), 400
 
 @bp.delete("/<int:pid>")

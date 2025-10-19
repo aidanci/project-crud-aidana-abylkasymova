@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Planets CRUD (Flask)</title>
+  <title>Planets CRUD (Flask) - Extended</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
     body {
@@ -27,7 +27,7 @@
   </style>
 </head>
 <body>
-<h1>🌍 Planets CRUD</h1>
+<h1>🌍 Planets CRUD - Extended</h1>
 
 <h2>Add / Edit Planet</h2>
 <div class="controls">
@@ -37,6 +37,8 @@
   <input id="climate" placeholder="Climate" required>
   <input id="population" type="number" placeholder="Population (>=0)" required>
   <input id="surfaceType" placeholder="Surface type" required>
+  <input id="temperature" placeholder="Temperature" required>
+  <input id="terrainType" placeholder="Terrain type" required>
   <button id="save">Save</button>
   <button id="reset" type="button">Reset</button>
 </div>
@@ -51,6 +53,8 @@
       <th>Climate</th>
       <th>Population</th>
       <th>Surface</th>
+      <th>Temperature</th>
+      <th>Terrain</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -66,11 +70,13 @@ const F = {
   system: qs('#system'),
   climate: qs('#climate'),
   population: qs('#population'),
-  surfaceType: qs('#surfaceType')
+  surfaceType: qs('#surfaceType'),
+  temperature: qs('#temperature'),
+  terrainType: qs('#terrainType')
 };
 const rows = qs('#rows');
 
-//load
+// load all planets
 async function list() {
   const r = await fetch(API);
   const data = await r.json();
@@ -82,6 +88,8 @@ async function list() {
       <td>${p.climate}</td>
       <td>${p.population}</td>
       <td>${p.surfaceType}</td>
+      <td>${p.temperature}</td>
+      <td>${p.terrainType}</td>
       <td>
         <button onclick="editP(${p.id})">Edit</button>
         <button onclick="delP(${p.id})">Delete</button>
@@ -90,7 +98,7 @@ async function list() {
   `).join('');
 }
 
-//edit
+// edit planet
 window.editP = async (id) => {
   const r = await fetch(`${API}/${id}`);
   if (!r.ok) { alert('Planet not found'); return; }
@@ -101,23 +109,27 @@ window.editP = async (id) => {
   F.climate.value = p.climate;
   F.population.value = p.population;
   F.surfaceType.value = p.surfaceType;
+  F.temperature.value = p.temperature;
+  F.terrainType.value = p.terrainType;
 };
 
-//delete
+// delete planet
 window.delP = async (id) => {
   if (!confirm('Delete this planet?')) return;
   const r = await fetch(`${API}/${id}`, { method: 'DELETE' });
   if (r.ok) list(); else alert('Delete failed');
 };
 
-//save
+// save planet
 qs('#save').onclick = async () => {
   const body = JSON.stringify({
     name: F.name.value.trim(),
     system: F.system.value.trim(),
     climate: F.climate.value.trim(),
     population: Number(F.population.value),
-    surfaceType: F.surfaceType.value.trim()
+    surfaceType: F.surfaceType.value.trim(),
+    temperature: F.temperature.value.trim(),
+    terrainType: F.terrainType.value.trim()
   });
   const id = F.id.value;
   const r = await fetch(id ? `${API}/${id}` : API, {
@@ -132,7 +144,7 @@ qs('#save').onclick = async () => {
   }
 };
 
-//reset
+// reset form
 function reset() { Object.values(F).forEach(i => i.value = ''); }
 qs('#reset').onclick = reset;
 
