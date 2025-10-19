@@ -1,135 +1,69 @@
-# Mini projekt CRUD – Planety
+# Planets CRUD - Wymaganie B (rozszerzenie modułu partnera)
 
-Projekt wykonany w ramach zadania **„CRUD × 2 encje” (część A)**.  
-Aplikacja webowa napisana w **Python (Flask)** z wykorzystaniem **SQLite**.  
-Umożliwia pełną obsługę CRUD (Create, Read, Update, Delete) dla encji **Planeta**.
+## 1. Uruchomienie lokalnie
 
----
+1. Przejdź do katalogu backend:
+   cd backend
+2. Zainstaluj zależności:
+   pip install -r ../requirements.txt
+3. Uruchom serwer:
+   python app.py
+4. Otwórz przeglądarkę:
+   http://localhost:5000/
+- Frontend pozwala na pełny CRUD planet z dodatkowymi polami `temperature` i `terrainType`.
 
-## Cel projektu
-Celem projektu jest stworzenie aplikacji webowej z pełnym przepływem:
-**baza danych → REST API → prosty frontend (HTML/JS)**.
+## 2. Endpoints API
 
-Aplikacja realizuje wszystkie wymagania etapu **A**:
-- relacyjna baza danych z migracją przy starcie (SQLite),
-- REST API z poprawnymi kodami HTTP i walidacją danych,
-- prosty interfejs HTML pozwalający na dodawanie, edytowanie i usuwanie rekordów,
-- README z instrukcją uruchomienia projektu w laboratorium.
+| Method | Endpoint        | Opis                                 |
+|--------|----------------|--------------------------------------|
+| GET    | /planets       | Pobierz wszystkie planety             |
+| GET    | /planets/:id   | Pobierz planetę po ID                 |
+| POST   | /planets       | Dodaj nową planetę (z nowymi polami) |
+| PUT    | /planets/:id   | Edytuj planetę                        |
+| DELETE | /planets/:id   | Usuń planetę                          |
 
----
+### Walidacja pól:
+- name (TEXT) - wymagany  
+- system (TEXT) - wymagany  
+- climate (TEXT) - wymagany  
+- population (INTEGER) - wymagany, >=0  
+- surfaceType (TEXT) - wymagany  
+- temperature (TEXT) - wymagany  
+- terrainType (TEXT) - wymagany  
 
-## Technologie
-- **Backend:** Python, Flask, Flask-Cors  
-- **Baza danych:** SQLite  
-- **Frontend:** HTML, JavaScript (fetch API)
+### Kody HTTP:
+- 200 OK - operacja zakończona powodzeniem (GET, PUT, DELETE)  
+- 201 Created - nowa planeta utworzona (POST)  
+- 400 Bad Request - brak wymaganych pól lub błędny typ danych  
+- 404 Not Found - nie znaleziono planety po ID
 
----
+## 3. Encja: Planet
 
-## Struktura projektu
-```
-planets-python/
-├─ backend/
-│  ├─ app.py
-│  ├─ database.py
-│  ├─ planets.py
-│  └─ validators.py
-├─ frontend/
-│  └─ index.html
-└─ requirements.txt
-```
+| Pole          | Typ       | Opis                     |
+|---------------|----------|--------------------------|
+| id            | INTEGER  | Klucz główny, autoinkrementacja |
+| name          | TEXT     | Nazwa planety           |
+| system        | TEXT     | Układ planetarny        |
+| climate       | TEXT     | Klimat                  |
+| population    | INTEGER  | Populacja (>=0)         |
+| surfaceType   | TEXT     | Typ powierzchni         |
+| temperature   | TEXT     | Temperatura             |
+| terrainType   | TEXT     | Typ terenu              |
+| created_at    | TEXT     | Data utworzenia         |
+| updated_at    | TEXT     | Data ostatniej aktualizacji |
 
----
+## 4. Zrzut ekranu UI
 
-## Uruchomienie projektu lokalnie
-1. Zainstaluj Python 3.10+  
-2️. W folderze projektu utwórz i aktywuj wirtualne środowisko:
+![UI Screenshot](../frontend/screenshot.png)
 
-```bash
-python -m venv .venv
-# Aktywacja:
-# Windows:
-. .\.venv\Scripts\Activate.ps1
-# macOS / Linux:
-source .venv/bin/activate
-```
+- Formularz CRUD obsługuje nowe pola `temperature` i `terrainType`  
+- Lista planet pokazuje wszystkie informacje w tabeli  
 
-3️. Zainstaluj wymagane biblioteki:
-```bash
-pip install -r requirements.txt
-```
+## 5. Git / Repo
 
-4️. Uruchom aplikację:
-```bash
-python -m backend.app
-```
-
-5️. Otwórz w przeglądarce:  
-[https://planety-aidana.onrender.com/](https://planety-aidana.onrender.com/)
-
-> Przy pierwszym uruchomieniu zostanie automatycznie utworzona baza danych `planets.db`.
-
----
-
-## Endpointy REST API
-
-| Metoda | Endpoint | Opis | Kod odpowiedzi |
-|--------|-----------|------|----------------|
-| `GET` | `/planets` | Zwraca listę wszystkich planet | 200 |
-| `GET` | `/planets/<id>` | Zwraca szczegóły planety o podanym ID | 200 / 404 |
-| `POST` | `/planets` | Dodaje nową planetę | 201 / 400 |
-| `PUT` | `/planets/<id>` | Aktualizuje dane planety | 200 / 400 / 404 |
-| `DELETE` | `/planets/<id>` | Usuwa planetę | 200 / 404 |
-
-### 🔹 Przykładowe dane (POST/PUT)
-```json
-{
-  "name": "Tatooine",
-  "system": "Outer Rim",
-  "climate": "Arid",
-  "population": 200000,
-  "surfaceType": "Desert"
-}
-```
-
----
-
-## Walidacja danych
-Plik `validators.py` sprawdza:
-- wymagane pola (`name`, `system`, `climate`, `surfaceType`),
-- poprawny typ liczbowy dla `population`,
-- unikalność planety w obrębie danego systemu,
-- że `population >= 0`.
-
----
-
-## Frontend
-Plik `frontend/index.html` umożliwia pełną obsługę CRUD:
-- dodawanie nowych planet,  
-- edycję istniejących,  
-- usuwanie wpisów,  
-- przeglądanie wszystkich danych w tabeli.
-
-Komunikacja odbywa się przez REST API (`fetch()`).
-
----
-
-## Aplikacja online
-Projekt działa publicznie pod adresem:  
-[https://planety-tanaiym.onrender.com](https://planety-tanaiym.onrender.com)
-
----
-
-## 🖼️ Zrzut ekranu
-![Zrzut ekranu aplikacji](screenshot.png)
-
----
-
-## Wersje
-- `v0.1-A` – część A (moja encja: Planeta)  
-- `v0.2-B` – część B (rozszerzenie modułu partnera)
-
----
-
-## Autor
-Aidana Abylkasymova  
-id 69486
+- Gałąź: feature/add-climate-population  
+- Pull Request do main partnera zawiera:
+  - opis dodanych pól i celu zmian,
+  - instrukcję uruchomienia lokalnego,
+  - zrzut ekranu UI  
+- Istniejąca funkcjonalność partnera pozostaje nienaruszona
