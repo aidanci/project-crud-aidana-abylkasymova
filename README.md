@@ -9,7 +9,7 @@
 3. Uruchom serwer:
    python app.py
 4. Otwórz przeglądarkę:
-   https://planety-aidana.onrender.com/
+   https://project-crud-aidana-abylkasymova-1.onrender.com/
 - Frontend pozwala na pełny CRUD planet z dodatkowymi polami `temperature` i `terrainType`.
 
 ## 2. Endpoints API
@@ -54,7 +54,7 @@
 
 ## 4. Zrzut ekranu UI
 
-![UI Screenshot](../screenshot.png)
+![UI Screenshot](screenshot1.png)
 
 - Formularz CRUD obsługuje nowe pola `temperature` i `terrainType`  
 - Lista planet pokazuje wszystkie informacje w tabeli  
