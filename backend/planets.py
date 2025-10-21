@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from sqlite3 import IntegrityError
-from database import get_conn
-from validators import validate_planet
+from .database import get_conn
+from .validators import validate_planet
 
 bp = Blueprint("planets", __name__, url_prefix="/planets")
 

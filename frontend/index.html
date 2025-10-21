@@ -5,24 +5,11 @@
   <title>Planets CRUD (Flask) - Extended</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 1rem; }
     input { margin: .25rem; padding: .25rem; }
     button { margin: .25rem; padding: .4rem .8rem; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      border-bottom: 1px solid #ddd;
-      padding: .4rem;
-      text-align: left;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border-bottom: 1px solid #ddd; padding: .4rem; text-align: left; }
     h1, h2 { color: #333; }
   </style>
 </head>
@@ -64,90 +51,49 @@
 <script>
 const API = "/planets";
 const qs = s => document.querySelector(s);
-const F = {
-  id: qs('#id'),
-  name: qs('#name'),
-  system: qs('#system'),
-  climate: qs('#climate'),
-  population: qs('#population'),
-  surfaceType: qs('#surfaceType'),
-  temperature: qs('#temperature'),
-  terrainType: qs('#terrainType')
-};
+const F = { id: qs('#id'), name: qs('#name'), system: qs('#system'), climate: qs('#climate'),
+            population: qs('#population'), surfaceType: qs('#surfaceType'),
+            temperature: qs('#temperature'), terrainType: qs('#terrainType') };
 const rows = qs('#rows');
 
-// load all planets
 async function list() {
   const r = await fetch(API);
   const data = await r.json();
-  rows.innerHTML = data.map(p => `
-    <tr>
-      <td>${p.id}</td>
-      <td>${p.name}</td>
-      <td>${p.system}</td>
-      <td>${p.climate}</td>
-      <td>${p.population}</td>
-      <td>${p.surfaceType}</td>
-      <td>${p.temperature}</td>
-      <td>${p.terrainType}</td>
-      <td>
-        <button onclick="editP(${p.id})">Edit</button>
-        <button onclick="delP(${p.id})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
+  rows.innerHTML = data.map(p => `<tr>
+    <td>${p.id}</td><td>${p.name}</td><td>${p.system}</td><td>${p.climate}</td>
+    <td>${p.population}</td><td>${p.surfaceType}</td><td>${p.temperature}</td><td>${p.terrainType}</td>
+    <td>
+      <button onclick="editP(${p.id})">Edit</button>
+      <button onclick="delP(${p.id})">Delete</button>
+    </td></tr>`).join('');
 }
 
-// edit planet
 window.editP = async (id) => {
   const r = await fetch(`${API}/${id}`);
   if (!r.ok) { alert('Planet not found'); return; }
   const p = await r.json();
-  F.id.value = p.id;
-  F.name.value = p.name;
-  F.system.value = p.system;
-  F.climate.value = p.climate;
-  F.population.value = p.population;
-  F.surfaceType.value = p.surfaceType;
-  F.temperature.value = p.temperature;
-  F.terrainType.value = p.terrainType;
+  Object.keys(F).forEach(k => F[k].value = p[k] || '');
 };
 
-// delete planet
 window.delP = async (id) => {
   if (!confirm('Delete this planet?')) return;
   const r = await fetch(`${API}/${id}`, { method: 'DELETE' });
   if (r.ok) list(); else alert('Delete failed');
 };
 
-// save planet
 qs('#save').onclick = async () => {
   const body = JSON.stringify({
-    name: F.name.value.trim(),
-    system: F.system.value.trim(),
-    climate: F.climate.value.trim(),
-    population: Number(F.population.value),
-    surfaceType: F.surfaceType.value.trim(),
-    temperature: F.temperature.value.trim(),
-    terrainType: F.terrainType.value.trim()
+    name: F.name.value.trim(), system: F.system.value.trim(), climate: F.climate.value.trim(),
+    population: Number(F.population.value), surfaceType: F.surfaceType.value.trim(),
+    temperature: F.temperature.value.trim(), terrainType: F.terrainType.value.trim()
   });
   const id = F.id.value;
-  const r = await fetch(id ? `${API}/${id}` : API, {
-    method: id ? 'PUT' : 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body
-  });
-  if (r.ok) { reset(); list(); }
-  else {
-    const e = await r.json();
-    alert(e.error || 'Error occurred');
-  }
+  const r = await fetch(id ? `${API}/${id}` : API, { method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body });
+  if (r.ok) { reset(); list(); } else { const e = await r.json(); alert(e.error || 'Error occurred'); }
 };
 
-// reset form
-function reset() { Object.values(F).forEach(i => i.value = ''); }
+function reset() { Object.values(F).forEach(i=>i.value=''); }
 qs('#reset').onclick = reset;
-
 list();
 </script>
 </body>

@@ -9,14 +9,10 @@ def get_conn():
     return conn
 
 def init_db():
-    """
-    Создаёт таблицу planets (если её нет):
-    - Уникальные поля (name, system)
-    - Проверка, что population >= 0
-    - Триггер, который обновляет updated_at при изменении строки
-    """
     conn = get_conn()
     cur = conn.cursor()
+
+    # Создание таблицы planets
     cur.execute("""
         CREATE TABLE IF NOT EXISTS planets (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,13 +26,23 @@ def init_db():
             UNIQUE(name, system)
         );
     """)
-    
+
+    # Триггер обновления updated_at
     cur.execute("""
         CREATE TRIGGER IF NOT EXISTS trg_planets_updated
         AFTER UPDATE ON planets
         BEGIN
-          UPDATE planets SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+            UPDATE planets SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
         END;
     """)
+
+    # Добавление новых колонок, если их нет
+    existing_columns = [row["name"] for row in cur.execute("PRAGMA table_info(planets)").fetchall()]
+    if "temperature" not in existing_columns:
+        cur.execute("ALTER TABLE planets ADD COLUMN temperature TEXT DEFAULT 'unknown';")
+    if "terrainType" not in existing_columns:
+        cur.execute("ALTER TABLE planets ADD COLUMN terrainType TEXT DEFAULT 'unknown';")
+
     conn.commit()
     conn.close()
+    print("Migration finished: new columns added if missing")
