@@ -120,84 +120,94 @@ Projekt działa publicznie pod adresem:
 
 ---
 
-## 🖼️ Zrzut ekranu
+## Zrzut ekranu
 ![Zrzut ekranu aplikacji](screenshot.png)
 
 ---
 
 # Część B – Autoryzacja i logowanie
 
-W ramach rozszerzenia aplikacji (etap B) dodano pełny moduł autoryzacji użytkowników oparty o token JWT.
-Dzięki temu wszystkie operacje CRUD na encji Planeta wymagają wcześniejszego zalogowania.
+W ramach rozszerzenia aplikacji (etap **B**) dodano pełny moduł **autoryzacji użytkowników** oparty o token **JWT**.  
+Dzięki temu wszystkie operacje **CRUD** na encji **Planeta** wymagają wcześniejszego zalogowania.
+
+---
 
 ## Nowe funkcje
 
-Endpoint /auth/register – rejestracja nowego użytkownika
+- **Endpoint** `/auth/register` – rejestracja nowego użytkownika  
+- **Endpoint** `/auth/login` – logowanie i pobranie tokenu JWT  
+- **Dekorator** `@token_required` – ochrona wszystkich endpointów `/planets`  
+- **Tabela** `users` w bazie SQLite  
+- **Prosty frontend** z formularzem logowania + obsługą tokenu w `localStorage`  
+- **Przycisk Logout** i blokada widoku danych po wylogowaniu  
 
-Endpoint /auth/login – logowanie i pobranie tokenu JWT
-
-Dekorator @token_required – ochrona wszystkich endpointów /planets
-
-Tabela users w bazie SQLite
-
-Prosty frontend z formularzem logowania + obsługą tokenu w localStorage
-
-Przycisk Logout i blokada widoku danych po wylogowaniu
+---
 
 ## Endpointy autoryzacji
-Metoda	Endpoint	Opis	Kod
-POST	/auth/register	Rejestruje nowego użytkownika	201 / 400
-POST	/auth/login	Loguje użytkownika i zwraca token JWT	200 / 401
-## Przykład POST /auth/register
+
+| Metoda | Endpoint | Opis | Kod odpowiedzi |
+|:--------|:----------|:------|:---------------|
+| `POST` | `/auth/register` | Rejestruje nowego użytkownika | 201 / 400 |
+| `POST` | `/auth/login` | Loguje użytkownika i zwraca token JWT | 200 / 401 |
+
+---
+
+### Przykład: `POST /auth/register`
+```json
 {
   "login": "testuser",
   "password": "12345"
 }
 
-## Przykład POST /auth/login
-{
-  "login": "testuser",
-  "password": "12345"
-}
+**Odpowiedź:**
 
-
-Odpowiedź:
-
+```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5..."
 }
+```
 
+> Token jest ważny przez **2 godziny**.  
+> Wszystkie żądania do `/planets` muszą zawierać nagłówek:
+> ```
+> Authorization: Bearer <token>
+> ```
 
-Token jest ważny 2 godziny.
-Wszystkie żądania do /planets muszą zawierać nagłówek:
-
-Authorization: Bearer <token>
+---
 
 ## Frontend (część B)
 
-Na stronie index.html znajduje się:
+Na stronie `index.html` znajduje się:
 
-formularz logowania (Login + Password),
+- formularz logowania (**Login + Password**),
+- przyciski **Login / Logout**,
+- formularz **dodawania/edycji planety**,
+- tabela z listą planet (widoczna tylko po zalogowaniu).
 
-przyciski Login / Logout,
+Token JWT jest automatycznie zapisywany w `localStorage`  
+i dołączany do każdego zapytania API.
 
-formularz dodawania/edycji planety,
-
-tabela z listą planet (tylko po zalogowaniu).
-
-Token JWT jest automatycznie zapisywany w localStorage i dołączany do każdego zapytania API.
+---
 
 ## Testowe konto
-Login	Hasło	Rola
-testuser	12345	USER
 
+| Login | Hasło | Rola |
+|:-------|:------|:------|
+| testuser | 12345 | USER |
+
+---
 
 ## Wersje
-Wersja	Opis
-v0.1-A	CRUD dla encji Planeta
-v0.2-B-1 – część B (rozszerzenie modułu partnera)
-v0.2-B-2	Autoryzacja + logowanie (JWT) + ochrona endpointów
+
+| Wersja | Opis |
+|:--------|:------|
+| `v0.1-A` | CRUD dla encji Planeta |
+| `v0.2-B-1` | Część B – rozszerzenie modułu partnera |
+| `v0.2-B-2` | Autoryzacja + logowanie (JWT) + ochrona endpointów |
+
+---
 
 ## Autor
+
 Aidana Abylkasymova  
-id 69486
+ID **69486**
