@@ -1,27 +1,32 @@
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from pathlib import Path
-
 from .database import init_db
 from .planets import bp as planets_bp
 from .auth import bp as auth_bp
 
-
 def create_app():
-    app = Flask(__name__, static_folder="../frontend", static_url_path="/")
+    app = Flask(__name__, static_folder="../frontend", static_url_path="")
     CORS(app)
-    init_db()
 
+    init_db()
     app.register_blueprint(planets_bp)
     app.register_blueprint(auth_bp)
 
     @app.route("/")
     def index():
+        frontend_path = Path(app.static_folder) / "index.html"
+        if not frontend_path.exists():
+            return "<h3>⚠️ index.html not found — check frontend folder</h3>", 404
         return send_from_directory(app.static_folder, "index.html")
+
+    @app.route("/<path:path>")
+    def static_proxy(path):
+        """Serve static files from frontend folder"""
+        return send_from_directory(app.static_folder, path)
 
     return app
 
-
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
