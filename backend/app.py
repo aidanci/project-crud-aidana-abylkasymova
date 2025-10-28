@@ -1,16 +1,18 @@
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from pathlib import Path
-from .database import init_db
+from werkzeug.security import generate_password_hash  # ✅ Added
+from .database import init_db, get_conn  # ✅ Added get_conn
 from .planets import bp as planets_bp
 from .auth import bp as auth_bp
+
 
 def create_app():
     app = Flask(__name__, static_folder="../frontend", static_url_path="")
     CORS(app)
 
     init_db()
-    
+
     conn = get_conn()
     conn.execute(
         "INSERT OR IGNORE INTO users (login, password_hash, role) VALUES (?, ?, ?)",
@@ -28,6 +30,11 @@ def create_app():
         if not frontend_path.exists():
             return "<h3>⚠️ index.html not found — check frontend folder</h3>", 404
         return send_from_directory(app.static_folder, "index.html")
+        
+    @app.route("/opis")
+    def opis():
+        return send_from_directory(app.static_folder, "about.html")
+
 
     @app.route("/<path:path>")
     def static_proxy(path):
@@ -35,6 +42,7 @@ def create_app():
         return send_from_directory(app.static_folder, path)
 
     return app
+
 
 if __name__ == "__main__":
     app = create_app()
