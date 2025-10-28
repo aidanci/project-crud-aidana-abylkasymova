@@ -4,9 +4,7 @@ from pathlib import Path
 
 from .database import init_db
 from .planets import bp as planets_bp
-from .auth import bp as auth_bp
-
-app.register_blueprint(auth_bp)
+from .auth import bp as auth_bp 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
@@ -17,7 +15,9 @@ def create_app():
 
     init_db()
 
+ 
     app.register_blueprint(planets_bp)
+    app.register_blueprint(auth_bp)
 
     @app.get("/")
     def index():
