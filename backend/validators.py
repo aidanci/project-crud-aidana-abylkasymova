@@ -14,10 +14,16 @@ def validate_planet(data: dict):
         return "Field 'system' is required"
     if not climate or not isinstance(climate, str):
         return "Field 'climate' is required"
-    if population is None or not isinstance(population, int):
+
+    try:
+        population = int(population)
+    except (TypeError, ValueError):
         return "Field 'population' must be an integer"
+
     if population < 0:
         return "Field 'population' must be >= 0"
+
     if not surface_type or not isinstance(surface_type, str):
         return "Field 'surfaceType' is required"
+
     return None

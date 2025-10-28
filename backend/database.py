@@ -12,8 +12,27 @@ def init_db():
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("""CREATE TABLE IF NOT EXISTS planets (...);""")
-    cur.execute("""CREATE TRIGGER IF NOT EXISTS trg_planets_updated ...""")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS planets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            system TEXT NOT NULL,
+            climate TEXT NOT NULL,
+            population INTEGER NOT NULL CHECK (population >= 0),
+            surface_type TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(name, system)
+        );
+    """)
+
+    cur.execute("""
+        CREATE TRIGGER IF NOT EXISTS trg_planets_updated
+        AFTER UPDATE ON planets
+        BEGIN
+            UPDATE planets SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+        END;
+    """)
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
