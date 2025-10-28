@@ -2,11 +2,10 @@ from flask import Blueprint, jsonify, request
 from sqlite3 import IntegrityError
 from .database import get_conn
 from .validators import validate_planet
-from .auth import token_required
+
+bp = Blueprint("planets", __name__, url_prefix="/planets")
 
 @bp.get("/")
-@token_required
-
 def list_planets():
     conn = get_conn()
     rows = conn.execute("SELECT id,name,system,climate,population,surface_type AS surfaceType FROM planets ORDER BY id").fetchall()
