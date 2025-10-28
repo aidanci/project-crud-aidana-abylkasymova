@@ -10,6 +10,15 @@ def create_app():
     CORS(app)
 
     init_db()
+    
+    conn = get_conn()
+    conn.execute(
+        "INSERT OR IGNORE INTO users (login, password_hash, role) VALUES (?, ?, ?)",
+        ("testuser", generate_password_hash("12345"), "USER")
+    )
+    conn.commit()
+    conn.close()
+
     app.register_blueprint(planets_bp)
     app.register_blueprint(auth_bp)
 
