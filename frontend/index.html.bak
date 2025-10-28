@@ -1,40 +1,4 @@
 <!DOCTYPE html>
-<h2>Login</h2>
-<input id="login" placeholder="Login">
-<input id="password" type="password" placeholder="Password">
-<button id="btnLogin">Login</button>
-
-<script>
-let token = localStorage.getItem('token') || '';
-
-document.querySelector('#btnLogin').onclick = async () => {
-  const r = await fetch('/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      login: document.querySelector('#login').value,
-      password: document.querySelector('#password').value
-    })
-  });
-  const data = await r.json();
-  if (r.ok) {
-    token = data.token;
-    localStorage.setItem('token', token);
-    alert('Logged in!');
-    list();
-  } else alert(data.error);
-};
-
-async function list() {
-  const r = await fetch('/planets', {
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-  if (r.status === 401) { rows.innerHTML = '<tr><td colspan="7">Please log in</td></tr>'; return; }
-  const data = await r.json();
-  rows.innerHTML = data.map(...);
-}
-</script>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
