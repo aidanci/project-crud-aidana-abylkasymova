@@ -1,133 +1,198 @@
-<script>
-window.addEventListener('DOMContentLoaded', () => {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🌍 Planets CRUD (Flask)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    input { margin: .25rem; padding: .25rem; }
+    button { margin: .25rem; padding: .4rem .8rem; cursor: pointer; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: .4rem;
+      text-align: left;
+    }
+    h1, h2 { color: #333; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>🌍 Planets CRUD</h1>
 
-const API = "/planets";
-const qs = s => document.querySelector(s);
-const F = {
-  id: qs('#id'),
-  name: qs('#name'),
-  system: qs('#system'),
-  climate: qs('#climate'),
-  population: qs('#population'),
-  surfaceType: qs('#surfaceType')
-};
-const rows = qs('#rows');
-const crudSection = document.querySelector('.controls').parentElement;
-const tableSection = document.querySelector('table');
-let token = localStorage.getItem('token') || '';
+  <h2>Login</h2>
+  <input id="login" placeholder="Login">
+  <input id="password" type="password" placeholder="Password">
+  <button id="btnLogin">Login</button>
+  <button id="btnLogout">Logout</button>
 
-function updateUI(loggedIn) {
-  crudSection.style.display = loggedIn ? 'block' : 'none';
-  tableSection.style.display = loggedIn ? 'table' : 'none';
-}
+  <div id="content" class="hidden">
+    <h2>Add / Edit Planet</h2>
+    <div class="controls">
+      <input id="id" type="hidden">
+      <input id="name" placeholder="Name" required>
+      <input id="system" placeholder="System" required>
+      <input id="climate" placeholder="Climate" required>
+      <input id="population" type="number" placeholder="Population (>=0)" required>
+      <input id="surfaceType" placeholder="Surface type" required>
+      <button id="save">Save</button>
+      <button id="reset" type="button">Reset</button>
+    </div>
 
-updateUI(!!token);
+    <h2>All Planets</h2>
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>System</th>
+          <th>Climate</th>
+          <th>Population</th>
+          <th>Surface</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="rows"><tr><td colspan="7">Please log in</td></tr></tbody>
+    </table>
+  </div>
 
-// --- LOGIN ---
-document.querySelector('#btnLogin').onclick = async () => {
-  const r = await fetch('/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      login: document.querySelector('#login').value,
-      password: document.querySelector('#password').value
-    })
+  <script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const API = "/planets";
+    const qs = s => document.querySelector(s);
+    const F = {
+      id: qs('#id'),
+      name: qs('#name'),
+      system: qs('#system'),
+      climate: qs('#climate'),
+      population: qs('#population'),
+      surfaceType: qs('#surfaceType')
+    };
+    const rows = qs('#rows');
+    const content = qs('#content');
+    let token = localStorage.getItem('token') || '';
+
+    function updateUI(loggedIn) {
+      content.classList.toggle('hidden', !loggedIn);
+    }
+
+    updateUI(!!token);
+
+    // --- LOGIN ---
+    qs('#btnLogin').onclick = async () => {
+      const r = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          login: qs('#login').value,
+          password: qs('#password').value
+        })
+      });
+      const data = await r.json();
+      if (r.ok) {
+        token = data.token;
+        localStorage.setItem('token', token);
+        alert('✅ Logged in!');
+        updateUI(true);
+        list();
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    };
+
+    // --- LOGOUT ---
+    qs('#btnLogout').onclick = () => {
+      localStorage.removeItem('token');
+      token = '';
+      updateUI(false);
+      rows.innerHTML = '<tr><td colspan="7">Please log in</td></tr>';
+    };
+
+    // --- LIST ---
+    async function list() {
+      const r = await fetch(API, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!r.ok) {
+        console.error('Fetch failed', r.status);
+        rows.innerHTML = '<tr><td colspan="7">Error: ' + r.status + '</td></tr>';
+        if (r.status === 401) updateUI(false);
+        return;
+      }
+      const data = await r.json();
+      rows.innerHTML = data.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${p.system}</td>
+          <td>${p.climate}</td>
+          <td>${p.population}</td>
+          <td>${p.surfaceType}</td>
+          <td>
+            <button onclick="editP(${p.id})">Edit</button>
+            <button onclick="delP(${p.id})">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // --- EDIT ---
+    window.editP = async (id) => {
+      const r = await fetch(`${API}/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (!r.ok) { alert('Planet not found'); return; }
+      const p = await r.json();
+      Object.keys(F).forEach(k => F[k].value = p[k] || '');
+    };
+
+    // --- DELETE ---
+    window.delP = async (id) => {
+      if (!confirm('Delete this planet?')) return;
+      const r = await fetch(`${API}/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (r.ok) list(); else alert('Delete failed');
+    };
+
+    // --- SAVE ---
+    qs('#save').onclick = async () => {
+      const body = JSON.stringify({
+        name: F.name.value.trim(),
+        system: F.system.value.trim(),
+        climate: F.climate.value.trim(),
+        population: Number(F.population.value),
+        surfaceType: F.surfaceType.value.trim()
+      });
+      const id = F.id.value;
+      const r = await fetch(id ? `${API}/${id}` : API, {
+        method: id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body
+      });
+      if (r.ok) { reset(); list(); }
+      else {
+        const e = await r.json();
+        alert(e.error || 'Error occurred');
+      }
+    };
+
+    function reset() {
+      Object.values(F).forEach(i => i.value = '');
+    }
+    qs('#reset').onclick = reset;
+
+    if (token) list();
   });
-  const data = await r.json();
-  if (r.ok) {
-    token = data.token;
-    localStorage.setItem('token', token);
-    alert('✅ Logged in!');
-    updateUI(true);
-    list();
-  } else alert(data.error);
-};
-
-// --- LOGOUT ---
-document.querySelector('#btnLogout').onclick = () => {
-  localStorage.removeItem('token');
-  token = '';
-  updateUI(false);
-  rows.innerHTML = '<tr><td colspan="7">Please log in</td></tr>';
-};
-
-// --- LIST ---
-async function list() {
-  const r = await fetch(API, {
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-
-  if (!r.ok) {
-    console.error('Server returned', r.status);
-    rows.innerHTML = '<tr><td colspan="7">Error loading planets (status ' + r.status + ')</td></tr>';
-    return;
-  }
-
-  if (r.status === 401) {
-    rows.innerHTML = '<tr><td colspan="7">Please log in</td></tr>';
-    updateUI(false);
-    return;
-  }
-
-  const data = await r.json();
-  rows.innerHTML = data.map(p => `
-    <tr>
-      <td>${p.id}</td>
-      <td>${p.name}</td>
-      <td>${p.system}</td>
-      <td>${p.climate}</td>
-      <td>${p.population}</td>
-      <td>${p.surfaceType}</td>
-      <td>
-        <button onclick="editP(${p.id})">Edit</button>
-        <button onclick="delP(${p.id})">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-// --- CRUD ---
-window.editP = async (id) => {
-  const r = await fetch(`${API}/${id}`, { headers: { 'Authorization': 'Bearer ' + token }});
-  if (!r.ok) { alert('Planet not found'); return; }
-  const p = await r.json();
-  Object.keys(F).forEach(k => F[k].value = p[k] || '');
-};
-
-window.delP = async (id) => {
-  if (!confirm('Delete this planet?')) return;
-  const r = await fetch(`${API}/${id}`, {
-    method: 'DELETE',
-    headers: { 'Authorization': 'Bearer ' + token }
-  });
-  if (r.ok) list(); else alert('Delete failed');
-};
-
-qs('#save').onclick = async () => {
-  const body = JSON.stringify({
-    name: F.name.value.trim(),
-    system: F.system.value.trim(),
-    climate: F.climate.value.trim(),
-    population: Number(F.population.value),
-    surfaceType: F.surfaceType.value.trim()
-  });
-  const id = F.id.value;
-  const r = await fetch(id ? `${API}/${id}` : API, {
-    method: id ? 'PUT' : 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-    body
-  });
-  if (r.ok) { reset(); list(); }
-  else {
-    const e = await r.json();
-    alert(e.error || 'Error occurred');
-  }
-};
-
-function reset() { Object.values(F).forEach(i => i.value = ''); }
-qs('#reset').onclick = reset;
-
-if (token) list();
-
-});
-</script>
+  </script>
+</body>
+</html>
