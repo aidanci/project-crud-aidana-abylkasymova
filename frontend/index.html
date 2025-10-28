@@ -1,69 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>🌍 Planets CRUD (Flask)</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
-    input { margin: .25rem; padding: .25rem; }
-    button { margin: .25rem; padding: .4rem .8rem; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      border-bottom: 1px solid #ddd;
-      padding: .4rem;
-      text-align: left;
-    }
-    h1, h2 { color: #333; }
-  </style>
-</head>
-<body>
-  <h1>🌍 Planets CRUD</h1>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
 
-  <h2>Login</h2>
-  <input id="login" placeholder="Login">
-  <input id="password" type="password" placeholder="Password">
-  <button id="btnLogin">Login</button>
-  <button id="btnLogout">Logout</button>
-
-  <h2>Add / Edit Planet</h2>
-  <div class="controls">
-    <input id="id" type="hidden">
-    <input id="name" placeholder="Name" required>
-    <input id="system" placeholder="System" required>
-    <input id="climate" placeholder="Climate" required>
-    <input id="population" type="number" placeholder="Population (>=0)" required>
-    <input id="surfaceType" placeholder="Surface type" required>
-    <button id="save">Save</button>
-    <button id="reset" type="button">Reset</button>
-  </div>
-
-  <h2>All Planets</h2>
-  <table id="tbl">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>System</th>
-        <th>Climate</th>
-        <th>Population</th>
-        <th>Surface</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
-
-  <script>
 const API = "/planets";
 const qs = s => document.querySelector(s);
 const F = {
@@ -75,7 +12,7 @@ const F = {
   surfaceType: qs('#surfaceType')
 };
 const rows = qs('#rows');
-const crudSection = document.querySelector('.controls').parentElement; // div around Add/Edit
+const crudSection = document.querySelector('.controls').parentElement;
 const tableSection = document.querySelector('table');
 let token = localStorage.getItem('token') || '';
 
@@ -119,11 +56,19 @@ async function list() {
   const r = await fetch(API, {
     headers: { 'Authorization': 'Bearer ' + token }
   });
+
+  if (!r.ok) {
+    console.error('Server returned', r.status);
+    rows.innerHTML = '<tr><td colspan="7">Error loading planets (status ' + r.status + ')</td></tr>';
+    return;
+  }
+
   if (r.status === 401) {
     rows.innerHTML = '<tr><td colspan="7">Please log in</td></tr>';
     updateUI(false);
     return;
   }
+
   const data = await r.json();
   rows.innerHTML = data.map(p => `
     <tr>
@@ -141,7 +86,7 @@ async function list() {
   `).join('');
 }
 
-// --- CRUD (edit, save, delete) ---
+// --- CRUD ---
 window.editP = async (id) => {
   const r = await fetch(`${API}/${id}`, { headers: { 'Authorization': 'Bearer ' + token }});
   if (!r.ok) { alert('Planet not found'); return; }
@@ -183,6 +128,6 @@ function reset() { Object.values(F).forEach(i => i.value = ''); }
 qs('#reset').onclick = reset;
 
 if (token) list();
+
+});
 </script>
-</body>
-</html>
